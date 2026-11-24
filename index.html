@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Detecta el Phishing</title>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: una columna de lectura con franja de cabecera, señales en rejilla, y un simulador de correos al centro */
+:root{
+  --bg:#eef2f1; --card:#ffffff; --fg:#12202b; --muted:#4d5f6b; --line:#cfdad7;
+  --accent:#0b7a75; --accent-ink:#ffffff; --warn:#b4400c; --warn-bg:#fdeee4; --ok:#1d7a3f; --ok-bg:#e4f4ea;
+  --head:"Space Grotesk",system-ui,sans-serif; --body:"Inter",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1a20; --card:#17262e; --fg:#e8f0ee; --muted:#9fb3ba; --line:#2b3f48;
+  --accent:#4fc3bb; --accent-ink:#0f1a20; --warn:#ff9d6b; --warn-bg:#3a2218; --ok:#7fd89c; --ok-bg:#16301f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1a20; --card:#17262e; --fg:#e8f0ee; --muted:#9fb3ba; --line:#2b3f48;
+  --accent:#4fc3bb; --accent-ink:#0f1a20; --warn:#ff9d6b; --warn-bg:#3a2218; --ok:#7fd89c; --ok-bg:#16301f; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-block:0 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+h1,h2,h3{font-family:var(--head);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,6vw,3.2rem)} h2{font-size:1.6rem} h3{font-size:1.1rem}
+p{margin:0}
+.hero{display:grid;grid-template-columns:1.3fr 1fr;gap:24px;align-items:center;padding-top:32px}
+.hero svg{width:100%;height:auto;max-width:100%}
+.kicker{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:600}
+.lead{color:var(--muted);margin-top:12px;max-width:60ch}
+.def{border-left:4px solid var(--accent);padding:4px 0 4px 16px;color:var(--fg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.tile .n{font-family:var(--head);color:var(--accent);font-weight:700}
+section{display:flex;flex-direction:column;gap:16px}
+.mail{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.mail-h{padding:12px 16px;border-bottom:1px solid var(--line);font-size:.9rem;display:grid;gap:2px;overflow-wrap:anywhere}
+.mail-h b{font-weight:600}
+.mail-b{padding:16px;display:flex;flex-direction:column;gap:10px;overflow-wrap:anywhere}
+.fakebtn{align-self:flex-start;background:var(--muted);color:var(--card);padding:8px 14px;border-radius:6px;font-size:.9rem}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+button{font:inherit;font-weight:600;padding:10px 18px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+button.alt{background:transparent;color:var(--accent)}
+button:focus-visible{outline:3px solid var(--fg);outline-offset:2px}
+button:disabled{opacity:.5;cursor:default}
+.fb{padding:14px 16px;border-radius:10px;font-size:.95rem}
+.fb.ok{background:var(--ok-bg);color:var(--ok)} .fb.bad{background:var(--warn-bg);color:var(--warn)}
+.fb ul{margin:6px 0 0;padding-left:20px}
+.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.9rem;flex-wrap:wrap;gap:8px}
+.quote{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:8px}
+.quote blockquote{margin:0;font-family:var(--head);font-size:1.15rem}
+.refs p{padding-left:2em;text-indent:-2em;overflow-wrap:anywhere;margin-bottom:10px}
+a{color:var(--accent)}
+footer{color:var(--muted);font-size:.9rem;border-top:1px solid var(--line);padding-top:16px}
+@media(max-width:640px){.hero{grid-template-columns:1fr}}
+body{margin:0}
+</style>
+</head>
+<body>
+
+<main class="wrap">
+  <header class="hero">
+    <div>
+      <p class="kicker">Ciberseguridad · Recurso educativo multimedia</p>
+      <h1>Detecta el phishing antes de hacer clic</h1>
+      <p class="lead">Aprende qué es el phishing, qué señales delatan un correo fraudulento y cómo protegerte. Al final, practica con tres correos de ejemplo.</p>
+    </div>
+    <svg viewBox="0 0 240 200" role="img" aria-label="Ilustración de un anzuelo que sale de un sobre de correo hacia una pantalla con un candado">
+      <rect x="20" y="70" width="140" height="100" rx="10" fill="none" stroke="var(--accent)" stroke-width="5"/>
+      <path d="M20 80 L90 130 L160 80" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M190 20 V110 a24 24 0 1 1 -40 -18" fill="none" stroke="var(--warn)" stroke-width="6" stroke-linecap="round"/>
+      <path d="M150 92 l-8 -10 m8 10 l12 -4" stroke="var(--warn)" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="190" cy="20" r="6" fill="var(--warn)"/>
+      <rect x="168" y="150" width="56" height="38" rx="6" fill="var(--fg)"/>
+      <path d="M186 150 v-8 a10 10 0 0 1 20 0 v8" fill="none" stroke="var(--fg)" stroke-width="5"/>
+      <circle cx="196" cy="168" r="5" fill="var(--bg)"/>
+    </svg>
+  </header>
+
+  <section>
+    <h2>¿Qué es el phishing?</h2>
+    <p class="def">El Instituto Nacional de Ciberseguridad de España (INCIBE) lo describe como una técnica utilizada por ciberdelincuentes para obtener información confidencial. Los atacantes envían correos fraudulentos que suplantan a empresas u organizaciones y piden abrir un enlace o descargar un archivo; también puede servir para instalar malware en tu dispositivo.</p>
+    <div class="quote">
+      <span class="kicker">Cita directa</span>
+      <blockquote>“Los estudiantes universitarios constituyen un grupo particularmente vulnerable” (Molina Hernández & Olivas Doña, 2025, p. 22).</blockquote>
+      <p class="lead" style="margin:0">Por eso este recurso está pensado para estudiantes.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>5 señales de un correo fraudulento</h2>
+    <div class="grid">
+      <div class="tile"><span class="n">Remitente</span><p>Es desconocido o no corresponde a la entidad que dice representar.</p></div>
+      <div class="tile"><span class="n">Redacción</span><p>Tiene errores gramaticales u ortográficos.</p></div>
+      <div class="tile"><span class="n">Datos pedidos</span><p>Solicita contraseñas, PIN o documento de identidad, algo que una empresa legítima no pide por correo.</p></div>
+      <div class="tile"><span class="n">Enlaces y adjuntos</span><p>Incluye enlaces o archivos adjuntos sospechosos.</p></div>
+      <div class="tile"><span class="n">Urgencia</span><p>Amenaza o te apura para que actúes sin pensar.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Cómo protegerte</h2>
+    <div class="grid">
+      <div class="tile"><h3>No abras ni respondas</h3><p>Elimina los correos no solicitados y bloquea al remitente. No envíes datos personales ni bancarios.</p></div>
+      <div class="tile"><h3>Verifica el origen</h3><p>Confirma quién envía el mensaje, aunque parezca conocido, y revisa a dónde lleva un enlace antes de pulsarlo.</p></div>
+      <div class="tile"><h3>Refuerza tus cuentas</h3><p>Mantén tus dispositivos y programas actualizados, usa antivirus y activa la autenticación de dos factores.</p></div>
+    </div>
+    <p class="lead" style="margin:0">Fuente: INCIBE (s. f.).</p>
+  </section>
+
+  <section aria-live="polite">
+    <h2>Ponte a prueba</h2>
+    <p class="lead" style="margin:0">Correos de ejemplo creados para este recurso. Decide si es phishing o es legítimo.</p>
+    <div class="meta"><span id="prog">Correo 1 de 3</span><span id="score">Aciertos: 0</span></div>
+    <div class="mail">
+      <div class="mail-h"><span><b>De:</b> <span id="from"></span></span><span><b>Asunto:</b> <span id="subj"></span></span></div>
+      <div class="mail-b"><p id="body"></p><span class="fakebtn" id="btn"></span></div>
+    </div>
+    <div class="row">
+      <button id="bp" type="button">Es phishing</button>
+      <button id="bl" type="button" class="alt">Es legítimo</button>
+      <button id="next" type="button" hidden>Siguiente</button>
+    </div>
+    <div id="fb" hidden></div>
+  </section>
+
+  <section class="refs">
+    <h2>Referencias</h2>
+    <p>Instituto Nacional de Ciberseguridad. (s. f.). <i>Phishing</i>. INCIBE. <a href="https://www.incibe.es/ciudadania/tematicas/ingenieria-social-fraudes-online/phishing">https://www.incibe.es/ciudadania/tematicas/ingenieria-social-fraudes-online/phishing</a></p>
+    <p>Molina Hernández, R. del C., & Olivas Doña, H. A. (2025). <i>Vulnerabilidad de estudiantes universitarios en la Universidad Central de Nicaragua ante ataques de phishing, Jinotepe, 2025</i> [Informe de investigación, Universidad Central de Nicaragua]. Repositorio UCN. <a href="https://repositorio.ucn.edu.ni/id/eprint/282/1/Vulnerabilidad%20de%20estudiantes%20universitarios%20en%20la%20Universidad%20Central%20de%20Nicaragua%20ante%20ataques%20de%20phishing%20Jinotepe.pdf">https://repositorio.ucn.edu.ni/id/eprint/282/1/Vulnerabilidad%20de%20estudiantes%20universitarios%20en%20la%20Universidad%20Central%20de%20Nicaragua%20ante%20ataques%20de%20phishing%20Jinotepe.pdf</a></p>
+    <p>Rincón Nuñez, P. M. (2023). Ataques basados en ingeniería social en Colombia, buenas prácticas y recomendaciones para evitar el riesgo. <i>InterSedes, 24</i>(49), 120-150. <a href="https://doi.org/10.15517/isucr.v24i49.50345">https://doi.org/10.15517/isucr.v24i49.50345</a></p>
+  </section>
+
+  <footer>Producto Académico 2 · Consolidado 2 · Gestión del Aprendizaje y Cultura Digital · Universidad Continental. Autores: Gonzalo Zapana Condori y Joaquín Vargas Borda.</footer>
+</main>
+
+<script>
+const M=[
+ {from:"soporte@bcp-seguridad-verifica.com",subj:"URGENTE: tu cuenta será bloqueada en 24 horas",body:"Estimado cliente, detectamos actividad sospechosa. Ingresa tus claves y tu PIN para verificar tu identidad o perderás el acceso a tu cuenta.",btn:"Verificar ahora",phish:true,
+  why:["Remitente con dominio que no corresponde a la entidad.","Genera urgencia con una amenaza de bloqueo.","Pide claves y PIN por correo, algo que una entidad legítima no hace."]},
+ {from:"aulavirtual@continental.edu.pe",subj:"Recordatorio: entrega de tu Producto Académico 2",body:"Hola. Te recordamos que la entrega del Producto Académico 2 se realiza en el aula virtual, unidad 4. No es necesario responder este mensaje.",btn:"Ir al aula virtual",phish:false,
+  why:["No pide datos personales ni claves.","No genera urgencia ni amenaza.","Aun así, conviene entrar escribiendo la dirección tú mismo en el navegador."]},
+ {from:"premios@sorteo-estudiante-2026.net",subj:"¡Ganaste una laptop! Reclámala hoy",body:"Fuiste elegido entre miles de estudiantes. Descarga el archivo adjunto y completa tus datos y número de documento para recibir tu premio.",btn:"Descargar adjunto",phish:true,
+  why:["Remitente desconocido que no pertenece a ninguna entidad real.","Te apura con “reclámala hoy”.","Pide descargar un adjunto y entregar tu documento de identidad."]}
+];
+let i=0,s=0,done=false;
+const $=id=>document.getElementById(id);
+function show(){const m=M[i];$("from").textContent=m.from;$("subj").textContent=m.subj;$("body").textContent=m.body;$("btn").textContent=m.btn;
+ $("prog").textContent="Correo "+(i+1)+" de "+M.length;$("score").textContent="Aciertos: "+s;
+ $("fb").hidden=true;$("next").hidden=true;$("bp").disabled=$("bl").disabled=false;done=false}
+function answer(p){if(done)return;done=true;const m=M[i];const ok=(p===m.phish);if(ok)s++;
+ const f=$("fb");f.className="fb "+(ok?"ok":"bad");
+ f.innerHTML="<b>"+(ok?"Correcto. ":"Incorrecto. ")+"Este correo "+(m.phish?"es phishing":"es legítimo")+".</b><ul>"+m.why.map(x=>"<li>"+x+"</li>").join("")+"</ul>";
+ f.hidden=false;$("bp").disabled=$("bl").disabled=true;$("score").textContent="Aciertos: "+s;
+ $("next").hidden=false;$("next").textContent=(i===M.length-1)?"Reiniciar":"Siguiente"}
+$("bp").onclick=()=>answer(true);$("bl").onclick=()=>answer(false);
+$("next").onclick=()=>{if(i===M.length-1){i=0;s=0}else i++;show()};
+show();
+</script>
+
+</body>
+</html>
